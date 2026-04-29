@@ -115,7 +115,18 @@
     will-change: transform;
     filter: drop-shadow(0 30px 60px rgba(0,0,0,0.55)) drop-shadow(0 0 24px rgba(181,24,28,0.18));
   }
-  .hero-engine { perspective: 1200px; }
+  /* When the hero engine is a video with a black background,
+     screen-blend it so the black disappears against the dark site bg.
+     filter must be removed (it creates a stacking context that breaks blend) */
+  video.hero-engine-img {
+    mix-blend-mode: screen;
+    filter: none;
+    background: #000;
+  }
+  .hero-engine {
+    perspective: 1200px;
+    filter: drop-shadow(0 30px 60px rgba(0,0,0,0.55)) drop-shadow(0 0 24px rgba(181,24,28,0.18));
+  }
 
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(28px); }
@@ -134,11 +145,11 @@
   }
   .hero-glow {
     position: absolute;
-    top: 48%; left: 78%;
-    width: 60vw; height: 60vw;
-    max-width: 900px; max-height: 900px;
-    background: radial-gradient(circle, rgba(181,24,28,0.32) 0%, rgba(181,24,28,0) 60%);
-    filter: blur(20px);
+    top: 42%; left: 22%;
+    width: 55vw; height: 55vw;
+    max-width: 800px; max-height: 800px;
+    background: radial-gradient(circle, rgba(181,24,28,0.42) 0%, rgba(181,24,28,0) 62%);
+    filter: blur(24px);
     pointer-events: none;
     animation: hero-glow 9s ease-in-out infinite;
   }
@@ -727,9 +738,9 @@ function Nav() {
 /* ---------- HERO ---------- */
 function Hero() {
   return (
-    <section className="relative min-h-screen overflow-hidden bg-ink">
-      {/* Fondo: gradiente + grain + glow rojo (sin imagen de camiones) */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_40%,rgba(181,24,28,0.18),transparent_55%),linear-gradient(180deg,#0E1116_0%,#0a0c10_100%)]"></div>
+    <section className="relative min-h-screen overflow-hidden" style={{ backgroundColor: '#000' }}>
+      {/* Fondo negro puro + glow rojo concentrado a la izquierda (cerca del título) */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_22%_42%,rgba(181,24,28,0.22),transparent_55%)]"></div>
       <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.012)_0_2px,transparent_2px_60px)] pointer-events-none"></div>
       <div className="grain absolute inset-0 pointer-events-none"></div>
       <div className="hero-glow"></div>
@@ -778,15 +789,14 @@ function Hero() {
             {/* Columna derecha: motor diésel */}
             <div className="lg:col-span-5 relative z-10 reveal reveal-3">
               <div className="hero-engine relative">
-                {/* Glow rojo detrás del motor */}
-                <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_50%,rgba(181,24,28,0.35)_0%,rgba(181,24,28,0)_60%)] blur-2xl"></div>
-                {/* Halo gris circular */}
-                <div className="absolute inset-[10%] -z-10 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0)_70%)]"></div>
-                <img
-                  src="uploads/Motor.png"
-                  alt="Motor diésel pesado"
-                  className="hero-engine-img w-full h-auto max-w-[560px] mx-auto select-none"
-                  draggable="false"
+                {/* Glows detrás del motor eliminados — para que el mix-blend-mode: screen
+                    no muestre tinte de color en el área "negra" del video */}
+                <video
+                  src="uploads/motor1.mp4"
+                  poster="uploads/Motor.png"
+                  autoPlay muted loop playsInline preload="auto"
+                  aria-label="Motor diésel pesado"
+                  className="hero-engine-img block w-full h-auto max-w-[560px] mx-auto select-none"
                 />
               </div>
             </div>

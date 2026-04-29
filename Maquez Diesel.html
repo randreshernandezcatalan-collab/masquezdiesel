@@ -1,0 +1,1386 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Maquez Diesel — Taller Mecánico Diésel</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Archivo:wght@700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+          display: ['Archivo', 'Inter', 'sans-serif'],
+          mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        },
+        colors: {
+          ink: '#0E1116',
+          steel: '#1A1F27',
+          brand: '#B5181C',
+          brandDark: '#7E1013',
+          ash:  '#9AA1AB',
+          bone: '#F5F4F1',
+        },
+      }
+    }
+  }
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+  html, body { background: #0E1116; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; color: #F5F4F1; }
+  ::selection { background: #B5181C; color: #fff; }
+
+  /* ===== Hero tinting ===== */
+  .hero-video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    filter: saturate(0.85) contrast(1.05);
+  }
+  .hero-tint {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(180deg, rgba(14,17,22,0.85) 0%, rgba(14,17,22,0.65) 40%, rgba(14,17,22,0.96) 100%),
+      radial-gradient(ellipse at 78% 50%, rgba(181,24,28,0.28) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .display-line {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 800;
+    line-height: 0.88;
+    letter-spacing: -0.04em;
+  }
+
+  /* ===== Reusable grain ===== */
+  .grain::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.5'/></svg>");
+    opacity: 0.18;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+  }
+  .grain-light::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.35'/></svg>");
+    opacity: 0.05;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+  }
+
+  /* ===== Marquee ===== */
+  @keyframes marquee {
+    0%   { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-50%, 0, 0); }
+  }
+  .marquee-track {
+    animation: marquee 60s linear infinite;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+  }
+  .marquee-track-rev {
+    animation: marquee 70s linear infinite reverse;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+  }
+  .brand-marquee {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 10%, #000 90%, transparent 100%);
+            mask-image: linear-gradient(90deg, transparent 0, #000 10%, #000 90%, transparent 100%);
+    transform: translateZ(0);
+  }
+  .brand-marquee:hover .marquee-track { animation-play-state: paused; }
+
+  /* ===== Hero motion ===== */
+  @keyframes engineFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50%      { transform: translateY(-14px) rotate(-0.4deg); }
+  }
+  .hero-engine-img {
+    animation: engineFloat 7s ease-in-out infinite;
+    will-change: transform;
+    filter: drop-shadow(0 30px 60px rgba(0,0,0,0.55)) drop-shadow(0 0 24px rgba(181,24,28,0.18));
+  }
+  .hero-engine { perspective: 1200px; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .reveal { opacity: 0; animation: fadeUp 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) forwards; }
+  .reveal-1 { animation-delay: 0.05s; }
+  .reveal-2 { animation-delay: 0.20s; }
+  .reveal-3 { animation-delay: 0.35s; }
+  .reveal-4 { animation-delay: 0.50s; }
+  .reveal-5 { animation-delay: 0.65s; }
+
+  @keyframes hero-glow {
+    0%, 100% { opacity: 0.45; transform: translate(-50%, -50%) scale(1.0); }
+    50%      { opacity: 0.75; transform: translate(-50%, -50%) scale(1.15); }
+  }
+  .hero-glow {
+    position: absolute;
+    top: 48%; left: 78%;
+    width: 60vw; height: 60vw;
+    max-width: 900px; max-height: 900px;
+    background: radial-gradient(circle, rgba(181,24,28,0.32) 0%, rgba(181,24,28,0) 60%);
+    filter: blur(20px);
+    pointer-events: none;
+    animation: hero-glow 9s ease-in-out infinite;
+  }
+
+  @keyframes scrollCue {
+    0%   { transform: translateY(-6px); opacity: 0.2; }
+    50%  { transform: translateY(0);    opacity: 1; }
+    100% { transform: translateY(8px);  opacity: 0.2; }
+  }
+  .scroll-cue { animation: scrollCue 2.2s ease-in-out infinite; }
+
+  .cta-lift { transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1), background-color 0.2s, color 0.2s; }
+  .cta-lift:hover { transform: translateY(-2px); }
+
+  @keyframes statsRise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .stat-rise { opacity: 0; animation: statsRise 0.7s ease-out forwards; }
+
+  /* ===== Generic scroll-in (IntersectionObserver) ===== */
+  .io-fade { opacity: 0; transform: translateY(36px); transition: opacity 0.9s cubic-bezier(0.2,0.7,0.2,1), transform 0.9s cubic-bezier(0.2,0.7,0.2,1); }
+  .io-fade.is-in { opacity: 1; transform: none; }
+  .io-fade-left { opacity: 0; transform: translateX(-32px); transition: opacity 0.9s cubic-bezier(0.2,0.7,0.2,1), transform 0.9s cubic-bezier(0.2,0.7,0.2,1); }
+  .io-fade-left.is-in { opacity: 1; transform: none; }
+  .io-fade-right { opacity: 0; transform: translateX(32px); transition: opacity 0.9s cubic-bezier(0.2,0.7,0.2,1), transform 0.9s cubic-bezier(0.2,0.7,0.2,1); }
+  .io-fade-right.is-in { opacity: 1; transform: none; }
+  .io-scale { opacity: 0; transform: scale(0.96); transition: opacity 0.9s cubic-bezier(0.2,0.7,0.2,1), transform 0.9s cubic-bezier(0.2,0.7,0.2,1); }
+  .io-scale.is-in { opacity: 1; transform: none; }
+  .io-stagger > * { opacity: 0; transform: translateY(28px); transition: opacity 0.7s cubic-bezier(0.2,0.7,0.2,1), transform 0.7s cubic-bezier(0.2,0.7,0.2,1); }
+  .io-stagger.is-in > * { opacity: 1; transform: none; }
+  .io-stagger.is-in > *:nth-child(1) { transition-delay: 0.05s; }
+  .io-stagger.is-in > *:nth-child(2) { transition-delay: 0.12s; }
+  .io-stagger.is-in > *:nth-child(3) { transition-delay: 0.20s; }
+  .io-stagger.is-in > *:nth-child(4) { transition-delay: 0.28s; }
+  .io-stagger.is-in > *:nth-child(5) { transition-delay: 0.36s; }
+  .io-stagger.is-in > *:nth-child(6) { transition-delay: 0.44s; }
+
+
+  /* ===== Section logo (efecto moderno) ===== */
+  @keyframes logoFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+  }
+  @keyframes logoGlowPulse {
+    0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(1.0); }
+    50%      { opacity: 0.95; transform: translate(-50%, -50%) scale(1.18); }
+  }
+  @keyframes lineDraw {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+  .section-logo-wrap {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    isolation: isolate;
+  }
+  .section-logo-wrap::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 110%; height: 200%;
+    background: radial-gradient(ellipse at center,
+      rgba(181, 24, 28, 0.32) 0%,
+      rgba(181, 24, 28, 0.08) 35%,
+      transparent 65%);
+    filter: blur(28px);
+    pointer-events: none;
+    z-index: -1;
+    animation: logoGlowPulse 5s ease-in-out infinite;
+  }
+  .section-logo {
+    animation: logoFloat 6s ease-in-out infinite;
+    will-change: transform;
+    filter: drop-shadow(0 8px 24px rgba(181, 24, 28, 0.22));
+  }
+  .section-logo-line {
+    height: 1px; width: 80px;
+    background: linear-gradient(90deg, transparent, rgba(181, 24, 28, 0.8), transparent);
+    transform: scaleX(0);
+    transform-origin: center;
+  }
+  .is-in .section-logo-line {
+    animation: lineDraw 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.4s forwards;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .section-logo, .section-logo-wrap::before { animation: none; }
+    .section-logo-line { transform: scaleX(1); animation: none; }
+  }
+
+  /* ===== Service card hover ===== */
+  .svc-card {
+    transition: transform 0.4s cubic-bezier(0.2,0.7,0.2,1), background-color 0.3s, border-color 0.3s, color 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .svc-card::after {
+    content: '';
+    position: absolute; inset: auto -20% -60% -20%;
+    height: 140%;
+    background: radial-gradient(ellipse at 50% 100%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 60%);
+    opacity: 0; transition: opacity 0.5s ease;
+    pointer-events: none;
+  }
+  .svc-card:hover { transform: translateY(-6px); }
+  .svc-card:hover::after { opacity: 1; }
+  .svc-card .svc-num { transition: color 0.3s, transform 0.3s; }
+
+  /* ===== Proceso timeline ===== */
+  .timeline-line {
+    position: absolute;
+    left: 19px; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, transparent 0%, #B5181C 8%, #B5181C 92%, transparent 100%);
+    transform: scaleY(0); transform-origin: top;
+    transition: transform 1.8s cubic-bezier(0.2,0.7,0.2,1);
+  }
+  .is-in .timeline-line { transform: scaleY(1); }
+  @media (min-width: 768px) { .timeline-line { left: 23px; } }
+
+  /* ===== Sticky frames (Especialidad) ===== */
+  .sticky-stage { position: relative; }
+  .sticky-pin { position: sticky; top: 0; height: 100vh; display: flex; align-items: center; }
+
+  /* ===== Tarifa card ===== */
+  .price-card {
+    transition: transform 0.4s cubic-bezier(0.2,0.7,0.2,1), border-color 0.3s, background-color 0.3s;
+  }
+  .price-card:hover { transform: translateY(-8px); }
+
+  /* ===== Magnetic-like CTA glow ===== */
+  .glow-cta {
+    position: relative;
+    overflow: hidden;
+  }
+  .glow-cta::before {
+    content: '';
+    position: absolute; inset: -2px;
+    border-radius: inherit;
+    background: conic-gradient(from 0deg, transparent 0%, #B5181C 12%, transparent 25%, transparent 50%, #B5181C 62%, transparent 75%, transparent 100%);
+    opacity: 0; transition: opacity 0.4s ease;
+    animation: spin 6s linear infinite;
+    z-index: 0;
+  }
+  .glow-cta:hover::before { opacity: 0.85; }
+  @keyframes spin { to { transform: rotate(1turn); } }
+  .glow-cta > * { position: relative; z-index: 1; }
+
+  /* ===== Shiny CTA (animated conic-gradient border + dotted shimmer) ===== */
+  @property --gradient-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+  @property --gradient-angle-offset {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+  @property --gradient-percent {
+    syntax: "<percentage>";
+    initial-value: 5%;
+    inherits: false;
+  }
+  @property --gradient-shine {
+    syntax: "<color>";
+    initial-value: white;
+    inherits: false;
+  }
+  .shiny-cta {
+    --shiny-cta-bg: #B5181C;
+    --shiny-cta-bg-subtle: #7E1013;
+    --shiny-cta-fg: #ffffff;
+    --shiny-cta-highlight: #ffffff;
+    --shiny-cta-highlight-subtle: rgba(255, 255, 255, 0.55);
+    --shiny-animation: gradient-angle linear infinite;
+    --shiny-duration: 3s;
+    --shiny-shadow-size: 2px;
+    --shiny-transition: 800ms cubic-bezier(0.25, 1, 0.5, 1);
+
+    isolation: isolate;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    outline-offset: 4px;
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    color: var(--shiny-cta-fg);
+    background:
+      linear-gradient(var(--shiny-cta-bg), var(--shiny-cta-bg)) padding-box,
+      conic-gradient(
+        from calc(var(--gradient-angle) - var(--gradient-angle-offset)),
+        transparent,
+        var(--shiny-cta-highlight) var(--gradient-percent),
+        var(--gradient-shine) calc(var(--gradient-percent) * 2),
+        var(--shiny-cta-highlight) calc(var(--gradient-percent) * 3),
+        transparent calc(var(--gradient-percent) * 4)
+      ) border-box;
+    box-shadow: inset 0 0 0 1px var(--shiny-cta-bg-subtle);
+    transition: var(--shiny-transition);
+    transition-property: --gradient-angle-offset, --gradient-percent, --gradient-shine;
+  }
+  .shiny-cta::before,
+  .shiny-cta::after,
+  .shiny-cta > .shiny-inner::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-start: 50%;
+    translate: -50% -50%;
+    z-index: -1;
+  }
+  .shiny-cta:active { translate: 0 1px; }
+  .shiny-cta::before {
+    --size: calc(100% - var(--shiny-shadow-size) * 3);
+    --position: 2px;
+    --space: calc(var(--position) * 2);
+    width: var(--size);
+    height: var(--size);
+    background: radial-gradient(
+      circle at var(--position) var(--position),
+      white calc(var(--position) / 4),
+      transparent 0
+    ) padding-box;
+    background-size: var(--space) var(--space);
+    background-repeat: space;
+    mask-image: conic-gradient(
+      from calc(var(--gradient-angle) + 45deg),
+      black,
+      transparent 10% 90%,
+      black
+    );
+    border-radius: inherit;
+    opacity: 0.4;
+    z-index: -1;
+  }
+  .shiny-cta::after {
+    width: 100%;
+    aspect-ratio: 1;
+    background: linear-gradient(
+      -50deg,
+      transparent,
+      var(--shiny-cta-highlight),
+      transparent
+    );
+    mask-image: radial-gradient(circle at bottom, transparent 40%, black);
+    opacity: 0.5;
+  }
+  .shiny-cta > .shiny-inner { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 0.5rem; }
+  .shiny-cta > .shiny-inner::before {
+    --size: calc(100% + 1rem);
+    width: var(--size);
+    height: var(--size);
+    box-shadow: inset 0 -1ex 2rem 4px var(--shiny-cta-highlight);
+    opacity: 0;
+    transition: opacity var(--shiny-transition);
+    animation: calc(var(--shiny-duration) * 1.5) shiny-breathe linear infinite;
+  }
+  .shiny-cta,
+  .shiny-cta::before,
+  .shiny-cta::after {
+    animation: var(--shiny-animation) var(--shiny-duration),
+      var(--shiny-animation) calc(var(--shiny-duration) / 0.4) reverse paused;
+    animation-composition: add;
+  }
+  .shiny-cta:is(:hover, :focus-visible) {
+    --gradient-percent: 20%;
+    --gradient-angle-offset: 95deg;
+    --gradient-shine: var(--shiny-cta-highlight-subtle);
+  }
+  .shiny-cta:is(:hover, :focus-visible),
+  .shiny-cta:is(:hover, :focus-visible)::before,
+  .shiny-cta:is(:hover, :focus-visible)::after {
+    animation-play-state: running;
+  }
+  .shiny-cta:is(:hover, :focus-visible) > .shiny-inner::before { opacity: 1; }
+
+  @keyframes gradient-angle { to { --gradient-angle: 360deg; } }
+  @keyframes shiny-breathe {
+    from, to { scale: 1; }
+    50%      { scale: 1.2; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .shiny-cta,
+    .shiny-cta::before,
+    .shiny-cta::after,
+    .shiny-cta > .shiny-inner::before { animation: none !important; }
+  }
+
+  /* ===== Reduced motion ===== */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-engine-img, .hero-glow, .scroll-cue,
+    .marquee-track, .marquee-track-rev,
+    .glow-cta::before { animation: none !important; }
+    .reveal, .stat-rise, .io-fade, .io-fade-left, .io-fade-right, .io-scale,
+    .io-stagger > * { opacity: 1 !important; transform: none !important; }
+    .timeline-line { transform: scaleY(1); transition: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useMemo } = React;
+
+/* ---------- Hook: scroll reveal vía IntersectionObserver ---------- */
+function useReveal(options = {}) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.15, ...options });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return ref;
+}
+
+/* ---------- Hook: count-up numérico ---------- */
+function useCountUp(target, { duration = 1600, decimals = 0, prefix = '', suffix = '' } = {}) {
+  const [value, setValue] = useState(0);
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) { setValue(target); return; }
+    let raf;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        const start = performance.now();
+        const tick = (t) => {
+          const p = Math.min(1, (t - start) / duration);
+          const eased = 1 - Math.pow(1 - p, 3);
+          setValue(target * eased);
+          if (p < 1) raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+        io.disconnect();
+      }
+    }, { threshold: 0.4 });
+    io.observe(el);
+    return () => { io.disconnect(); cancelAnimationFrame(raf); };
+  }, [target, duration]);
+  const formatted = useMemo(() => {
+    const n = decimals === 0 ? Math.round(value) : value.toFixed(decimals);
+    return `${prefix}${Number(n).toLocaleString('es-MX')}${suffix}`;
+  }, [value, decimals, prefix, suffix]);
+  return [ref, formatted];
+}
+
+/* ---------- Iconos SVG ---------- */
+const Icon = {
+  Menu: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" {...p}>
+      <path d="M4 7h16M4 12h16M4 17h16"/>
+    </svg>
+  ),
+  X: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" {...p}>
+      <path d="M5 5l14 14M19 5L5 19"/>
+    </svg>
+  ),
+  Phone: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/>
+    </svg>
+  ),
+  Wrench: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <path d="M14.7 6.3a4 4 0 0 0 5 5l-9 9a2.83 2.83 0 1 1-4-4l8-8z"/>
+    </svg>
+  ),
+  Arrow: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" {...p}>
+      <path d="M5 12h14M13 6l6 6-6 6"/>
+    </svg>
+  ),
+  Engine: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <path d="M5 9h2V7h4v2h3l3 3v2h2v3h-2v2H6v-2H4v-3h1v-3l1-2z"/>
+      <path d="M9 9V6h2"/>
+    </svg>
+  ),
+  Gauge: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <path d="M12 14l4-4"/>
+      <path d="M3.5 17a9 9 0 1 1 17 0"/>
+      <circle cx="12" cy="14" r="1.2" fill="currentColor"/>
+    </svg>
+  ),
+  Spark: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>
+    </svg>
+  ),
+  Truck: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <path d="M2 7h11v9H2zM13 10h4l4 3v3h-8z"/>
+      <circle cx="6" cy="18" r="2"/>
+      <circle cx="17" cy="18" r="2"/>
+    </svg>
+  ),
+  Cog: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14 3h-4l-.6 2.6a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2L10 21h4l.6-2.6a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.07-.4.1-.8.1-1.2z"/>
+    </svg>
+  ),
+  Shield: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <path d="M12 2l8 3v7c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V5l8-3z"/>
+      <path d="M9 12l2 2 4-4"/>
+    </svg>
+  ),
+  Mail: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <rect x="3" y="5" width="18" height="14" rx="2"/>
+      <path d="M3 7l9 6 9-6"/>
+    </svg>
+  ),
+  Pin: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <path d="M12 22s7-7 7-13a7 7 0 1 0-14 0c0 6 7 13 7 13z"/>
+      <circle cx="12" cy="9" r="2.5"/>
+    </svg>
+  ),
+  Quote: (p) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...p}>
+      <path d="M7 7h4v4H7c0 3 1 4 3 4v3c-4 0-6-2-6-7V7zm10 0h4v4h-4c0 3 1 4 3 4v3c-4 0-6-2-6-7V7z"/>
+    </svg>
+  ),
+};
+
+/* ---------- LOGO (SVG) ---------- */
+function LogoMD({ className = '', tagline = false }) {
+  const vb = tagline ? "0 0 320 200" : "0 0 320 130";
+  return (
+    <svg viewBox={vb} className={className} fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MarquezDiesel">
+      {/* Shield */}
+      <g transform="translate(160, 46)">
+        <path
+          d="M -34 -38 L 34 -38 L 34 14 C 34 30 24 40 0 46 C -24 40 -34 30 -34 14 Z"
+          fill="none"
+          stroke="#9AA1AB"
+          strokeWidth="3"
+          strokeLinejoin="round"
+        />
+        <text
+          x="0" y="11"
+          textAnchor="middle"
+          fontFamily="Archivo, sans-serif"
+          fontWeight="800"
+          fontSize="34"
+          letterSpacing="-1.5"
+        >
+          <tspan fill="#FFFFFF">M</tspan><tspan fill="#B5181C">D</tspan>
+        </text>
+      </g>
+
+      {/* Wordmark */}
+      <text
+        x="160" y="118"
+        textAnchor="middle"
+        fontFamily="Archivo, sans-serif"
+        fontWeight="900"
+        fontSize="40"
+        letterSpacing="-1.8"
+      >
+        <tspan fill="#FFFFFF">Marquez</tspan><tspan fill="#B5181C">Diesel</tspan>
+      </text>
+
+      {tagline && (
+        <g>
+          <line x1="50" y1="146" x2="270" y2="146" stroke="#9AA1AB" strokeWidth="0.8" opacity="0.55" />
+          <text
+            x="160" y="172"
+            textAnchor="middle"
+            fontFamily="Inter, sans-serif"
+            fontWeight="500"
+            fontSize="13"
+            letterSpacing="4"
+            fill="#9AA1AB"
+          >30 AÑOS DE EXPERIENCIA</text>
+        </g>
+      )}
+    </svg>
+  );
+}
+
+/* ---------- SECTION LOGO (efecto moderno reutilizable) ---------- */
+function SectionLogo() {
+  const ref = useReveal();
+  return (
+    <div ref={ref} className="io-fade flex justify-center">
+      <div className="section-logo-wrap">
+        <span className="section-logo-line mb-3"></span>
+        <LogoMD tagline className="section-logo h-14 md:h-16 w-auto" />
+        <span className="section-logo-line mt-3"></span>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- NAV ---------- */
+function Nav() {
+  const [open, setOpen] = useState(false);
+  const items = [
+    { label: 'Servicios',    href: '#servicios' },
+    { label: 'Contacto',     href: '#contacto' },
+    { label: 'Especialidad', href: '#especialidad' },
+    { label: 'Proceso',      href: '#proceso' },
+    { label: 'Garantía',     href: '#garantia' },
+  ];
+
+  return (
+    <header className="absolute top-0 left-0 right-0 z-30">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 py-5 md:py-6 flex items-center justify-between gap-6">
+        {/* Logo (izquierda) */}
+        <a href="#" className="flex items-center group flex-shrink-0" aria-label="MarquezDiesel inicio">
+          <LogoMD className="h-10 md:h-12 w-auto" />
+        </a>
+
+        {/* Nav (centrado) */}
+        <nav className="hidden lg:flex flex-1 items-center justify-center gap-7">
+          {items.map(i => (
+            <a key={i.label} href={i.href}
+               className="text-[13px] font-medium tracking-wide uppercase text-white/85 hover:text-brand transition-colors">
+              {i.label}
+            </a>
+          ))}
+        </nav>
+
+        {/* Pedir cita (derecha) */}
+        <a href="#contacto"
+           className="shiny-cta hidden lg:inline-flex px-5 py-2.5 text-[13px] font-semibold uppercase tracking-wide flex-shrink-0">
+          <span className="shiny-inner"><Icon.Phone className="w-4 h-4"/> Pedir cita</span>
+        </a>
+
+        {/* Mobile toggle */}
+        <button
+          onClick={() => setOpen(o => !o)}
+          className="lg:hidden text-white p-2 -mr-2"
+          aria-label="Menú">
+          {open ? <Icon.X className="w-6 h-6"/> : <Icon.Menu className="w-6 h-6"/>}
+        </button>
+      </div>
+
+      {open && (
+        <div className="lg:hidden mx-6 rounded-xl bg-white/95 backdrop-blur shadow-2xl ring-1 ring-black/5 overflow-hidden">
+          <ul className="py-2">
+            {items.map(i => (
+              <li key={i.label}>
+                <a href={i.href}
+                   onClick={() => setOpen(false)}
+                   className="block px-5 py-3 text-sm font-medium text-ink hover:bg-ink hover:text-white transition-colors">
+                  {i.label}
+                </a>
+              </li>
+            ))}
+            <li className="px-3 pt-2 pb-3">
+              <a href="#contacto"
+                 onClick={() => setOpen(false)}
+                 className="shiny-cta block text-center px-4 py-2.5 text-sm font-semibold">
+                <span className="shiny-inner" style={{display:'inline-flex', justifyContent:'center'}}>Pedir cita</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      )}
+    </header>
+  );
+}
+
+/* ---------- HERO ---------- */
+function Hero() {
+  return (
+    <section className="relative min-h-screen overflow-hidden bg-ink">
+      {/* Fondo: gradiente + grain + glow rojo (sin imagen de camiones) */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_40%,rgba(181,24,28,0.18),transparent_55%),linear-gradient(180deg,#0E1116_0%,#0a0c10_100%)]"></div>
+      <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.012)_0_2px,transparent_2px_60px)] pointer-events-none"></div>
+      <div className="grain absolute inset-0 pointer-events-none"></div>
+      <div className="hero-glow"></div>
+
+      <Nav />
+
+      <div className="relative min-h-screen flex flex-col">
+        <div className="flex-1 flex items-center">
+          <div className="max-w-7xl mx-auto px-6 md:px-8 w-full pt-32 md:pt-36 lg:pt-32 grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            {/* Columna izquierda: copy */}
+            <div className="lg:col-span-7 relative z-10">
+              <h1 className="display-line text-white text-5xl sm:text-6xl md:text-7xl lg:text-[80px] xl:text-[92px]">
+                <span className="block reveal reveal-1">Potencia<span className="text-brand">.</span></span>
+                <span className="block -mt-1 md:-mt-2 lg:-mt-3 reveal reveal-2">
+                  Confianza<span className="text-brand">.</span>
+                </span>
+              </h1>
+
+              <div className="flex items-center gap-3 mt-6 reveal reveal-3">
+                <span className="block w-10 h-px bg-brand"></span>
+                <span className="text-[11px] md:text-xs font-semibold uppercase tracking-[0.28em] text-brand">
+                  Especialidad en inyección diésel · 30 años de experiencia
+                </span>
+              </div>
+
+              <p className="mt-6 md:mt-8 max-w-xl text-base md:text-lg text-white/75 leading-relaxed reveal reveal-3">
+                Diagnóstico, reparación y mantenimiento especializado para motores
+                diésel ligeros y pesados. Tu camión vuelve a la ruta cuando debe volver.
+              </p>
+
+              <div className="mt-8 md:mt-10 flex flex-wrap items-center gap-3 reveal reveal-4">
+                <a href="#contacto"
+                   className="shiny-cta cta-lift inline-flex px-5 py-3 text-sm font-semibold">
+                  <span className="shiny-inner">
+                    Agendar diagnóstico
+                    <Icon.Arrow className="w-4 h-4"/>
+                  </span>
+                </a>
+                <a href="#servicios"
+                   className="cta-lift inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white/10 ring-1 ring-white/25 text-white text-sm font-semibold backdrop-blur hover:bg-white/20 transition-colors">
+                  Ver servicios
+                </a>
+              </div>
+            </div>
+
+            {/* Columna derecha: motor diésel */}
+            <div className="lg:col-span-5 relative z-10 reveal reveal-3">
+              <div className="hero-engine relative">
+                {/* Glow rojo detrás del motor */}
+                <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_50%,rgba(181,24,28,0.35)_0%,rgba(181,24,28,0)_60%)] blur-2xl"></div>
+                {/* Halo gris circular */}
+                <div className="absolute inset-[10%] -z-10 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0)_70%)]"></div>
+                <img
+                  src="uploads/Motor.png"
+                  alt="Motor diésel pesado"
+                  className="hero-engine-img w-full h-auto max-w-[560px] mx-auto select-none"
+                  draggable="false"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative z-10 flex justify-center pb-3 pointer-events-none">
+          <div className="scroll-cue flex flex-col items-center gap-1.5">
+            <span className="font-mono text-[9px] uppercase tracking-[0.28em] text-white/50">Scroll</span>
+            <span className="block w-px h-6 bg-white/40"></span>
+          </div>
+        </div>
+
+        <div className="relative z-10 border-t border-white/10 bg-black/30 backdrop-blur-sm overflow-hidden">
+          <div className="brand-marquee py-6 md:py-7">
+            <div className="flex whitespace-nowrap marquee-track w-max">
+              {(() => {
+                const brands = [
+                  'Kenworth','Volvo','Scania','Mercedes-Benz','Freightliner',
+                  'Mack','Peterbilt','International','MAN','Iveco',
+                  'DAF','Hino','Cummins','Detroit','Caterpillar',
+                ];
+                const list = [...brands, ...brands];
+                return list.map((b, i) => (
+                  <span key={i} className="flex items-center gap-8 md:gap-10 px-6 md:px-8 flex-none">
+                    <span className="font-display font-extrabold uppercase text-white/85 text-xl md:text-2xl tracking-tight">{b}</span>
+                    <span className="block w-1.5 h-1.5 rounded-full bg-brand flex-none"></span>
+                  </span>
+                ));
+              })()}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- SERVICIOS ---------- */
+function Servicios() {
+  const ref = useReveal();
+  const items = [
+    {
+      n: '01',
+      icon: Icon.Gauge,
+      title: 'Diagnóstico ECU',
+      desc: 'Escaneo computarizado y lectura de códigos en motores Cummins, Detroit, Caterpillar, Volvo y más.',
+      tags: ['Escáner OEM', 'Análisis en vivo'],
+    },
+    {
+      n: '02',
+      icon: Icon.Spark,
+      title: 'Sistema de inyección',
+      desc: 'Reparación y calibración de bombas, inyectores, common rail y sistemas HEUI con banco de pruebas.',
+      tags: ['Common Rail', 'HEUI'],
+    },
+    {
+      n: '03',
+      icon: Icon.Engine,
+      title: 'Reconstrucción de motor',
+      desc: 'Mantenimiento mayor, rectificación, cambio de empaques de cabeza, pistones, cigüeñal y bielas.',
+      tags: ['Mayor', 'Empaques'],
+    },
+    {
+      n: '04',
+      icon: Icon.Cog,
+      title: 'Turbo y after-treatment',
+      desc: 'Reparación de turbocompresores, válvulas EGR, DPF y sistemas SCR. Limpieza y regeneración.',
+      tags: ['Turbo', 'DPF · SCR'],
+    },
+    {
+      n: '05',
+      icon: Icon.Truck,
+      title: 'Transmisión y embrague',
+      desc: 'Ajuste, reparación y cambio de transmisiones manuales y automáticas para tractocamiones.',
+      tags: ['Eaton', 'Allison'],
+    },
+    {
+      n: '06',
+      icon: Icon.Wrench,
+      title: 'Mantenimiento preventivo',
+      desc: 'Servicio programado por kilometraje. Aceites, filtros, refrigerantes y revisión de 80 puntos.',
+      tags: ['Servicio A/B/C', '80 puntos'],
+    },
+  ];
+  return (
+    <section id="servicios" className="relative bg-ink py-24 md:py-32 border-t border-white/5">
+      <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div ref={ref} className="io-fade flex flex-col md:flex-row md:items-end md:justify-between gap-8 mb-14 md:mb-20">
+          <div>
+              <div className="flex items-center gap-3 mb-5">
+              <span className="block w-8 h-px bg-brand"></span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brand">
+                Servicios
+              </span>
+            </div>
+            <h2 className="font-display font-extrabold text-white text-5xl md:text-6xl lg:text-7xl tracking-tight leading-[0.92] max-w-3xl">
+              Todo lo que tu<br/>motor diésel necesita<span className="text-brand">.</span>
+            </h2>
+          </div>
+          <p className="md:max-w-sm text-white/65 text-base leading-relaxed">
+            Del diagnóstico inicial al overhaul completo. Atendemos flotas, tracto-camiones,
+            maquinaria pesada y unidades de carga ligera.
+          </p>
+        </div>
+
+        <Stagger className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+          {items.map((s, i) => (
+            <article key={s.n}
+              className="svc-card group bg-white/[0.04] border border-white/10 rounded-2xl p-7 md:p-8 text-white hover:bg-brand hover:border-brand">
+              <div className="flex items-start justify-between mb-8">
+                <span className="svc-num font-mono text-[11px] uppercase tracking-[0.28em] text-white/40 group-hover:text-white/90">
+                  {s.n} / 06
+                </span>
+                <s.icon className="w-7 h-7 text-white/85 group-hover:text-white transition-colors"/>
+              </div>
+              <h3 className="font-display font-extrabold text-2xl md:text-3xl tracking-tight leading-tight mb-3">
+                {s.title}
+              </h3>
+              <p className="text-sm leading-relaxed text-white/65 group-hover:text-white/90 transition-colors">
+                {s.desc}
+              </p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {s.tags.map(t => (
+                  <span key={t}
+                    className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/55 group-hover:text-white/90 border border-white/15 group-hover:border-white/40 rounded-full px-2.5 py-1 transition-colors">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </article>
+          ))}
+        </Stagger>
+      </div>
+    </section>
+  );
+}
+
+function Stagger({ children, className = '' }) {
+  const ref = useReveal();
+  return <div ref={ref} className={`io-stagger ${className}`}>{children}</div>;
+}
+
+/* ---------- ESPECIALIDAD: sticky frames con texto cambiante ---------- */
+function Especialidad() {
+  const stageRef = useRef(null);
+  const [active, setActive] = useState(0);
+  const frames = [
+    {
+      kicker: '01 · Inspección',
+      title: 'Diagnóstico antes de tocar',
+      body: 'Cada unidad entra primero al banco de diagnóstico. Lectura de ECU, prueba de compresión y análisis de gases antes de presupuestar una sola tuerca.',
+      video: 'uploads/Motor2.mp4',
+    },
+    {
+      kicker: '02 · Pieza correcta',
+      title: 'Refacciones de origen',
+      body: 'Trabajamos con catálogos OEM y refacciones de marca. Si una pieza puede ser reconstruida con garantía, te damos las dos opciones con honestidad.',
+      video: 'uploads/Motor.mp4',
+    },
+    {
+      kicker: '03 · Mano experta',
+      title: 'Treinta años en el banco',
+      body: 'Nuestros técnicos vienen de la calle. Han desarmado motores en plena carretera. Saben qué falla, por qué falla y cómo evitar que vuelva a fallar.',
+      video: 'uploads/Motor2.mp4',
+    },
+    {
+      kicker: '04 · Entrega medida',
+      title: 'Tu unidad de regreso a la ruta',
+      body: 'Te damos fecha real, no fecha optimista. Llamada al 50% del trabajo, llamada cuando entra a banco final, llamada cuando puedes recogerla.',
+      video: 'uploads/Motor.mp4',
+    },
+  ];
+
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const rect = el.getBoundingClientRect();
+      const total = rect.height - window.innerHeight;
+      if (total <= 0) return;
+      const progress = Math.min(1, Math.max(0, -rect.top / total));
+      const idx = Math.min(frames.length - 1, Math.floor(progress * frames.length));
+      setActive(idx);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, []);
+
+  return (
+    <section id="especialidad" className="relative bg-ink text-white border-t border-white/5">
+      <div className="grain absolute inset-0 pointer-events-none"></div>
+      <div ref={stageRef} className="sticky-stage" style={{ height: `${frames.length * 100}vh` }}>
+        <div className="sticky-pin">
+          <div className="max-w-7xl mx-auto px-6 md:px-8 w-full grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Texto cambiante */}
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <span className="block w-8 h-px bg-brand"></span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brand">
+                  Por qué nos eligen
+                </span>
+              </div>
+
+              <div className="relative min-h-[320px] md:min-h-[360px]">
+                {frames.map((f, i) => (
+                  <div key={i}
+                    className="absolute inset-0 transition-all duration-700"
+                    style={{
+                      opacity: active === i ? 1 : 0,
+                      transform: active === i ? 'translateY(0)' : 'translateY(20px)',
+                      pointerEvents: active === i ? 'auto' : 'none',
+                    }}>
+                    <p className="font-mono text-xs uppercase tracking-[0.28em] text-brand mb-4">
+                      {f.kicker}
+                    </p>
+                    <h3 className="font-display font-extrabold text-4xl md:text-5xl lg:text-6xl tracking-tight leading-[0.95] mb-6">
+                      {f.title}<span className="text-brand">.</span>
+                    </h3>
+                    <p className="text-white/70 text-base md:text-lg leading-relaxed max-w-md">
+                      {f.body}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Indicador de progreso */}
+              <div className="mt-10 flex gap-2">
+                {frames.map((_, i) => (
+                  <span key={i} className="h-1 rounded-full transition-all duration-500"
+                    style={{
+                      width: active === i ? '40px' : '14px',
+                      background: active >= i ? '#B5181C' : 'rgba(255,255,255,0.15)',
+                    }}/>
+                ))}
+              </div>
+            </div>
+
+            {/* Visual lateral — video del motor sobre fondo negro */}
+            <div className="relative order-first lg:order-last">
+              <div className="relative aspect-[4/5] rounded-3xl overflow-hidden ring-1 ring-white/10 shadow-2xl bg-black">
+                {/* Glow rojo radial sutil para anclar el motor */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(181,24,28,0.18)_0%,rgba(181,24,28,0)_60%)]"></div>
+                {/* Dos videos superpuestos: se hace crossfade según el frame activo */}
+                {['uploads/Motor2.mp4', 'uploads/Motor.mp4'].map((src) => {
+                  const isActive = frames[active].video === src;
+                  return (
+                    <video
+                      key={src}
+                      src={src}
+                      poster="uploads/Motor.png"
+                      autoPlay muted loop playsInline preload="auto"
+                      aria-label="Motor diésel en diagnóstico"
+                      className="absolute inset-0 w-full h-full object-contain transition-all duration-700"
+                      style={{
+                        opacity: isActive ? 1 : 0,
+                        transform: `scale(${1.0 + active * 0.015})`,
+                      }}
+                    />
+                  );
+                })}
+                {/* Vignette top/bottom para integrar con el fondo */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40 pointer-events-none"></div>
+                {/* Esquina decorativa */}
+                <div className="absolute top-5 right-5 w-12 h-12 border-2 border-brand/80 rounded-full grid place-items-center bg-black/40 backdrop-blur-sm">
+                  <span className="font-mono text-xs text-brand">{String(active+1).padStart(2,'0')}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- PROCESO (timeline vertical con línea dibujándose) ---------- */
+function Proceso() {
+  const ref = useReveal();
+  const steps = [
+    { n: '01', t: 'Recepción y check-in', d: 'Te recibimos, registramos la unidad y escuchamos el síntoma. Sin diagnóstico previo no hay presupuesto.' },
+    { n: '02', t: 'Diagnóstico computarizado', d: 'Conexión al ECU, lectura de códigos activos e históricos, prueba en banco si aplica.' },
+    { n: '03', t: 'Cotización por escrito', d: 'Antes de cualquier intervención, recibes una cotización clara con tiempos, refacciones y garantía.' },
+    { n: '04', t: 'Reparación supervisada', d: 'Tu unidad asignada a un técnico responsable. Reportes en cada hito del trabajo.' },
+    { n: '05', t: 'Pruebas y entrega', d: 'Banco final, road-test cuando aplica y entrega con bitácora firmada y garantía por escrito.' },
+  ];
+  return (
+    <section id="proceso" className="relative bg-ink py-24 md:py-32 border-t border-white/5 overflow-hidden">
+      <div className="grain absolute inset-0 pointer-events-none"></div>
+      <div className="relative max-w-6xl mx-auto px-6 md:px-8">
+        <div className="max-w-3xl mb-14 md:mb-20">
+          <div className="flex items-center gap-3 mb-5">
+            <span className="block w-8 h-px bg-brand"></span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brand">
+              Cómo trabajamos
+            </span>
+          </div>
+          <h2 className="font-display font-extrabold text-white text-5xl md:text-6xl lg:text-7xl tracking-tight leading-[0.92]">
+            Cinco pasos<br/>cero sorpresas<span className="text-brand">.</span>
+          </h2>
+        </div>
+
+        <div ref={ref} className="io-stagger relative pl-14 md:pl-20">
+          <div className="timeline-line"></div>
+          {steps.map((s, i) => (
+            <div key={s.n} className="relative pb-12 md:pb-16 last:pb-0">
+              <div className="absolute -left-14 md:-left-20 top-0">
+                <div className="relative">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-brand text-white grid place-items-center font-mono text-xs md:text-sm font-bold ring-4 ring-ink shadow-lg">
+                    {s.n}
+                  </div>
+                </div>
+              </div>
+              <div className="group bg-white/[0.04] border border-white/10 rounded-2xl p-6 md:p-8 hover:bg-brand hover:border-brand transition-all">
+                <h3 className="font-display font-extrabold text-2xl md:text-3xl tracking-tight text-white mb-2">
+                  {s.t}
+                </h3>
+                <p className="text-white/65 group-hover:text-white/90 text-base leading-relaxed max-w-2xl transition-colors">{s.d}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- GARANTÍA ---------- */
+function Garantia() {
+  const [r1, n1] = useCountUp(6, { suffix: '' });
+  const [r2, n2] = useCountUp(30, { suffix: '' });
+  const [r3, n3] = useCountUp(4200, { prefix: '+' });
+  const titleRef = useReveal();
+
+  return (
+    <section id="garantia" className="relative bg-ink text-white py-24 md:py-36 overflow-hidden">
+      <div className="grain absolute inset-0 pointer-events-none"></div>
+      {/* Glow lateral */}
+      <div className="absolute -right-40 top-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-brand/20 blur-3xl pointer-events-none"></div>
+
+      <div className="relative max-w-7xl mx-auto px-6 md:px-8 grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+        <div ref={titleRef} className="io-fade lg:col-span-7">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="block w-8 h-px bg-brand"></span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brand">
+              Garantía por escrito
+            </span>
+          </div>
+          <h2 className="font-display font-extrabold text-5xl md:text-7xl lg:text-[92px] tracking-tight leading-[0.92]">
+            Si lo arreglamos<br/>
+            <span className="text-brand">responde</span><br/>
+            por escrito<span className="text-brand">.</span>
+          </h2>
+          <p className="mt-8 text-white/70 text-base md:text-lg leading-relaxed max-w-xl">
+            Toda reparación mayor sale con garantía firmada de 6 meses.
+            Si el síntoma vuelve por el mismo concepto, lo atendemos sin costo
+            de mano de obra.
+          </p>
+          <div className="mt-10 flex flex-wrap gap-3">
+            <a href="#contacto" className="shiny-cta cta-lift inline-flex px-6 py-3.5 text-sm font-semibold">
+              <span className="shiny-inner">
+                Hablar con el taller
+                <Icon.Arrow className="w-4 h-4"/>
+              </span>
+            </a>
+            <a href="#proceso" className="cta-lift inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white/10 ring-1 ring-white/20 text-white text-sm font-semibold backdrop-blur hover:bg-white/15">
+              Ver proceso
+            </a>
+          </div>
+        </div>
+
+        <div className="lg:col-span-5 grid grid-cols-2 gap-4 md:gap-5">
+          <div ref={r1} className="col-span-2 bg-white/5 border border-white/10 rounded-3xl p-7 md:p-8 backdrop-blur">
+            <div className="flex items-center gap-3 mb-3">
+              <Icon.Shield className="w-5 h-5 text-brand"/>
+              <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/50">Garantía</span>
+            </div>
+            <div className="font-display font-extrabold text-7xl md:text-8xl tracking-tighter">
+              {n1}<span className="text-brand">m</span>
+            </div>
+            <p className="mt-3 text-sm text-white/60">Meses de garantía firmada en reparación mayor.</p>
+          </div>
+          <div ref={r2} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-7 backdrop-blur">
+            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/50">Experiencia</span>
+            <div className="font-display font-extrabold text-5xl md:text-6xl tracking-tighter mt-3">
+              {n2}<span className="text-brand">a</span>
+            </div>
+            <p className="mt-2 text-xs text-white/60">años en el banco</p>
+          </div>
+          <div ref={r3} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-7 backdrop-blur">
+            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/50">Unidades</span>
+            <div className="font-display font-extrabold text-5xl md:text-6xl tracking-tighter mt-3">
+              {n3}
+            </div>
+            <p className="mt-2 text-xs text-white/60">camiones atendidos</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- CONTACTO ---------- */
+function Contacto() {
+  const ref = useReveal();
+  return (
+    <section id="contacto" className="relative bg-ink text-white py-24 md:py-36 overflow-hidden">
+      <div className="grain absolute inset-0 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_30%,rgba(181,24,28,0.22),transparent_55%)] pointer-events-none"></div>
+
+      <div className="relative max-w-7xl mx-auto px-6 md:px-8">
+        <div ref={ref} className="io-fade flex items-center gap-10 xl:gap-16 mb-14 md:mb-20">
+          <div className="max-w-4xl flex-shrink-0">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="block w-8 h-px bg-brand"></span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-brand">
+                Contacto
+              </span>
+            </div>
+            <h2 className="font-display font-extrabold text-5xl md:text-7xl lg:text-[96px] tracking-tight leading-[0.92]">
+              Trae tu unidad.<br/>
+              <span className="text-brand">Hablemos</span><span className="text-brand">.</span>
+            </h2>
+          </div>
+          <div className="hidden lg:flex">
+            <div className="section-logo-wrap">
+              <LogoMD tagline className="section-logo h-40 xl:h-52 w-auto" />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-12 gap-10 lg:gap-16">
+          {/* Form */}
+          <form className="lg:col-span-7 grid sm:grid-cols-2 gap-4 md:gap-5"
+            onSubmit={(e) => { e.preventDefault(); alert('Gracias. Te llamamos en menos de 24h.'); }}>
+            <div className="sm:col-span-1">
+              <label className="block font-mono text-[10px] uppercase tracking-[0.22em] text-white/50 mb-2">Nombre</label>
+              <input required type="text"
+                className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-colors"
+                placeholder="Tu nombre"/>
+            </div>
+            <div className="sm:col-span-1">
+              <label className="block font-mono text-[10px] uppercase tracking-[0.22em] text-white/50 mb-2">Teléfono</label>
+              <input required type="tel" autoComplete="tel"
+                className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-colors"
+                placeholder="+56 9 0000 0000"/>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block font-mono text-[10px] uppercase tracking-[0.22em] text-white/50 mb-2">Unidad</label>
+              <input type="text"
+                className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-colors"
+                placeholder="Marca, modelo y año (ej. Kenworth T800, 2018)"/>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block font-mono text-[10px] uppercase tracking-[0.22em] text-white/50 mb-2">Síntoma o servicio</label>
+              <textarea required rows="4"
+                className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-colors resize-none"
+                placeholder="Cuéntanos qué le pasa o qué servicio necesitas…"/>
+            </div>
+            <div className="sm:col-span-2 flex flex-wrap items-center gap-4 mt-2">
+              <button type="submit"
+                className="shiny-cta cta-lift inline-flex px-6 py-3.5 text-sm font-semibold">
+                <span className="shiny-inner">
+                  Solicitar cita
+                  <Icon.Arrow className="w-4 h-4"/>
+                </span>
+              </button>
+              <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/45">
+                Te respondemos en menos de 24h
+              </span>
+            </div>
+          </form>
+
+          {/* Datos prácticos */}
+          <aside className="lg:col-span-5 space-y-4">
+            <a href="tel:+56981773669"
+              className="block bg-white/5 border border-white/10 hover:bg-brand hover:border-brand rounded-2xl p-6 backdrop-blur transition-all group">
+              <div className="flex items-start gap-4">
+                <div className="w-11 h-11 rounded-xl bg-brand/15 grid place-items-center text-brand group-hover:bg-white/20 group-hover:text-white transition-colors">
+                  <Icon.Phone className="w-5 h-5"/>
+                </div>
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/50 group-hover:text-white/80 transition-colors">Teléfono directo</div>
+                  <div className="font-display font-extrabold text-2xl md:text-3xl text-white tracking-tight mt-1">
+                    +56 9 8177 3669
+                  </div>
+                  <div className="text-sm text-white/60 group-hover:text-white/85 mt-1 transition-colors">Llamadas y WhatsApp</div>
+                </div>
+              </div>
+            </a>
+
+            <a href="mailto:marquezdiesel@gmail.com"
+              className="block bg-white/5 border border-white/10 hover:bg-brand hover:border-brand rounded-2xl p-6 backdrop-blur transition-all group">
+              <div className="flex items-start gap-4">
+                <div className="w-11 h-11 rounded-xl bg-brand/15 grid place-items-center text-brand group-hover:bg-white/20 group-hover:text-white transition-colors">
+                  <Icon.Mail className="w-5 h-5"/>
+                </div>
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/50 group-hover:text-white/80 transition-colors">Correo</div>
+                  <div className="font-display font-extrabold text-lg text-white tracking-tight mt-1 break-all">
+                    marquezdiesel@gmail.com
+                  </div>
+                </div>
+              </div>
+            </a>
+
+            <a href="https://maps.google.com/?q=Silva+Ch%C3%A1vez+52" target="_blank" rel="noopener"
+              className="block bg-white/5 border border-white/10 hover:bg-brand hover:border-brand rounded-2xl p-6 backdrop-blur transition-all group">
+              <div className="flex items-start gap-4">
+                <div className="w-11 h-11 rounded-xl bg-brand/15 grid place-items-center text-brand group-hover:bg-white/20 group-hover:text-white transition-colors">
+                  <Icon.Pin className="w-5 h-5"/>
+                </div>
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/50 group-hover:text-white/80 transition-colors">Dirección</div>
+                  <div className="font-display font-extrabold text-lg text-white tracking-tight mt-1 leading-tight">
+                    Silva Chávez 52
+                  </div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/50 group-hover:text-white/80 mt-3 transition-colors">Horario</div>
+                  <div className="text-sm text-white/75 group-hover:text-white/90 mt-1 transition-colors">
+                    Lun – Vie · 9:00 — 18:30<br/>
+                    Sáb – Dom · Cerrado
+                  </div>
+                </div>
+              </div>
+            </a>
+          </aside>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- FOOTER ---------- */
+function Footer() {
+  return (
+    <footer className="bg-ink text-white/70 border-t border-white/10">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 py-14 grid md:grid-cols-4 gap-10">
+        <div className="md:col-span-2">
+          <div className="flex items-center">
+            <LogoMD tagline className="h-24 w-auto" />
+          </div>
+          <p className="mt-5 max-w-md text-sm leading-relaxed">
+            Especialistas en motores diésel con 30 años de experiencia. Diagnóstico
+            computarizado, reparación de inyección, turbos, transmisiones y mantenimiento mayor.
+          </p>
+        </div>
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.22em] text-white/50 mb-4">Taller</p>
+          <ul className="space-y-2 text-sm">
+            <li>Silva Chávez 52</li>
+            <li>Lun – Vie · 9:00 — 18:30</li>
+            <li>Sáb – Dom · Cerrado</li>
+          </ul>
+        </div>
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.22em] text-white/50 mb-4">Contacto</p>
+          <ul className="space-y-2 text-sm">
+            <li><a href="tel:+56981773669" className="hover:text-brand transition-colors">+56 9 8177 3669</a></li>
+            <li><a href="mailto:marquezdiesel@gmail.com" className="hover:text-brand transition-colors break-all">marquezdiesel@gmail.com</a></li>
+            <li>Mecánica automotriz · Mecánicos</li>
+          </ul>
+        </div>
+      </div>
+      <div className="border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-6 md:px-8 py-5 flex flex-wrap items-center justify-between text-[11px] uppercase tracking-[0.2em] text-white/45 gap-3">
+          <span>© 2026 Maquez Diesel</span>
+          <span>Hecho con grasa y código</span>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ---------- APP ---------- */
+function App() {
+  return (
+    <main data-screen-label="01 Landing">
+      <Hero />
+      <Servicios />
+      <Contacto />
+      <Especialidad />
+      <Proceso />
+      <Garantia />
+      <Footer />
+    </main>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
